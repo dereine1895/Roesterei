@@ -1,11 +1,11 @@
 import java.util.Scanner;
-import utils.List;
-import utils.Stack;
-import utils.Queue;
-
+import utils.*;
 
 public class Verwaltung {
     private Scanner scanner;
+    private Queue<Kunde> kundeQueue;
+    private List<Getraenk> getraenkeListe;
+    private Stack<Rechnung> rechnungsStack;
 
     public static void main(String[] args) {
         new Verwaltung();
@@ -13,166 +13,105 @@ public class Verwaltung {
 
     public Verwaltung() {
         scanner = new Scanner(System.in);
-        Warteschlange<Kunde> warteschlange = new Warteschlange<>();
-        Stack<Rechnung> rechnungStack = new Stack<>();
-        List<Getraenk> getraenkList = new List<>();
+        kundeQueue = new Queue<>();
+        getraenkeListe = new List<>();
+        rechnungsStack = new Stack<>();
+        fuelleKaffeeListeAuf();
 
         while (true) {
             System.out.println("== HAUPTMENÜ ==");
-            System.out.println("[1] Warteschlange verwalten");
-            System.out.println("[2] Stack verwalten");
-            System.out.println("[3] Liste verwalten");
+            System.out.println("[1] Kunde hinzufügen");
+            System.out.println("[2] Bestellung bearbeiten");
+            System.out.println("[3] Warteschlange anzeigen");
             System.out.println("[4] Beenden");
-            int HauptOption = scanner.nextInt();
-            scanner.nextLine(); // Scanner leeren
-
-            switch (HauptOption) {
-                case 1:
-                    verwalteWarteschlange(warteschlange);
-                    break;
-                case 2:
-                    verwalteStack(rechnungStack);
-                    break;
-                case 3:
-                    verwalteListe(getraenkList);
-                    break;
-                case 4:
-                    System.out.println("Programm beendet.");
-                    return; // Programm beenden
-                default:
-                    System.out.println("Ungültige Auswahl, bitte versuche es erneut.");
-                    break;
-            }
-        }
-    }
-
-    private void verwalteWarteschlange(Warteschlange<Kunde> warteschlange) {
-        while (true) {
-            System.out.println("== WARTESCHLANGEN MENÜ ==");
-            System.out.println("[1] Hinzufügen zur Warteschlange");
-            System.out.println("[2] Manuell Hinzufügen zur Warteschlange");
-            System.out.println("[3] Entfernen aus der Warteschlange");
-            System.out.println("[4] Zeige Inhalt der Warteschlange");
-            System.out.println("[5] Zurück zum Hauptmenü");
             int option = scanner.nextInt();
-            scanner.nextLine(); // Scanner leeren
+            scanner.nextLine();
 
-            switch (option) {
-                case 1:
-                    System.out.println("Wie viele Kunden willst du zur Warteschlange hinzufügen?");
-                    int numCustomers = scanner.nextInt();
-                    for (int i = 0; i < numCustomers; i++) {
-                        Kunde kunde = new Kunde("Kunde" + i);
-                        warteschlange.einfuegen(kunde);
-                    }
-                    break;
-                case 2:
-                    System.out.println("Namen des Kunden angeben, der zur Warteschlange hinzugefügt werden soll:");
-                    String name = scanner.nextLine();
-                    Kunde kundeM = new Kunde(name);
-                    warteschlange.einfuegen(kundeM);
-                    break;
-                case 3:
-                    warteschlange.entfernen();
-                    break;
-                case 4:
-                    Kunde hilfeWarteschlange = warteschlange.gibErsten();
-                    if (hilfeWarteschlange != null) {
-                        System.out.println("Erster Kunde in der Warteschlange: " + hilfeWarteschlange.getName());
-                    } else {
-                        System.out.println("Die Warteschlange ist leer.");
-                    }
-                    break;
-                case 5:
-                    return; // Zurück zum Hauptmenü
-                default:
-                    System.out.println("Ungültige Auswahl, bitte versuche es erneut.");
-                    break;
+            if (option == 1) {
+                kundeHinzufuegen();
+            } else if (option == 2) {
+                bearbeiteBestellung();
+            } else if (option == 3) {
+                zeigeWarteschlange();
+            } else if (option == 4) {
+                System.out.println("Programm wird beendet. Auf Wiedersehen!");
+                break;
+            } else {
+                System.out.println("Ungültige Option. Bitte erneut versuchen.");
             }
+        }
+        scanner.close();
+    }
+
+    private void kundeHinzufuegen() {
+        System.out.print("Name des Kunden: ");
+        String name = scanner.nextLine();
+        System.out.print("Gewünschtes Getränk (Cappuccino, Kaffee, FlatWhite, ColdBrew): ");
+        String wunschGetraenk = scanner.nextLine();
+        Kunde neuerKunde = new Kunde(name, wunschGetraenk);
+        Queue.enqueue(neuerKunde);
+
+        System.out.println("Kunde " + name + " wurde zur Warteschlange hinzugefügt.");
+    }
+
+    private void bearbeiteBestellung() {
+        if (!kundeQueue.isEmpty() && !getraenkeListe.isEmpty()) {
+            kundeQueue.();
+            Kunde kunde = kundeQueue.getContent();
+            Getraenk bestelltesGetraenk = null;
+
+            getraenkeListe.toFirst();
+            while (getraenkeListe.hasAccess()) {
+                if (getraenkeListe.getContent().getName().equals(kunde.getWunschGetraenk())) {
+                    bestelltesGetraenk = getraenkeListe.getContent();
+                    break;
+                }
+                getraenkeListe.next();
+            }
+
+            if (bestelltesGetraenk != null) {
+                getraenkeListe.remove();
+                Rechnung rechnung = new Rechnung("05.03.2025", rechnungsStack.isEmpty() ? 1 : rechnungsStack.getContent().getrechnungsnr() + 1, 5);
+                kunde.setRechnung(rechnung);
+                rechnungsStack.push(rechnung);
+                kunde.setGetraenkErhalten(true);
+                System.out.println("Bestellung für " + kunde.getName() + " wurde bearbeitet.");
+                kundeQueue.dequeue();
+            } else {
+                System.out.println("Gewünschtes Getränk nicht verfügbar. Bitte füllen Sie die Liste auf.");
+            }
+        } else {
+            System.out.println("Keine Kunden oder keine Getränke verfügbar.");
         }
     }
 
-    private void verwalteStack(Stack<Rechnung> rechnungStack) {
-        while (true) {
-            System.out.println("== STACK MENÜ ==");
-            System.out.println("[1] Hinzufügen zum Stack");
-            System.out.println("[2] Entfernen aus dem Stack");
-            System.out.println("[3] Zeige Inhalt des Stacks");
-            System.out.println("[4] Zurück zum Hauptmenü");
-            int option = scanner.nextInt();
-            scanner.nextLine(); // Scanner leeren
+    private void zeigeWarteschlange() {
 
-            switch (option) {
-                case 1:
-                    System.out.println("Beschreibung der Rechnung angeben, die zum Stack hinzugefügt werden soll:");
-                    String beschreibung = scanner.nextLine();
-                    Rechnung rechnung = new Rechnung(beschreibung);
-                    rechnungStack.push(rechnung);
-                    break;
-                case 2:
-                    rechnungStack.pop();
-                    break;
-                case 3:
-                    Rechnung hilfeStack = rechnungStack.getContent();
-                    if (hilfeStack != null) {
-                        System.out.println("Oberste Rechnung im Stack: " + hilfeStack.getBeschreibung());
-                    } else {
-                        System.out.println("Der Stack ist leer.");
-                    }
-                    break;
-                case 4:
-                    return; // Zurück zum Hauptmenü
-                default:
-                    System.out.println("Ungültige Auswahl, bitte versuche es erneut.");
-                    break;
-            }
+        // Gesamte Warteschlange anzeigen
+        //
+        if (!kundeQueue.isEmpty()) {
+            System.out.println("Inhalt der Warteschlange:");
+            kundeQueue.head(); // Gehe zum ersten Element
+
+            while (kundeQueue.hasAccess()) { // Solange ein Element vorhanden ist
+                Kunde aktuellerKunde = kundeQueue.getContent(); // Holt das aktuelle Element
+                if (aktuellerKunde != null) {
+                    System.out.println("- " + aktuellerKunde.getName() + " (Bestellt: " + aktuellerKunde.getWunschGetraenk() + ")");
+                }
+                kundeQueue.next(); // Springe zum nächsten Kunden
+            } System.out.println(this.kundeQueue.getContent());
+        }
+
+        else {
+            System.out.println("Die Warteschlange ist leer.");
         }
     }
-
-    private void verwalteListe(List<Getraenk> getraenkList) {
-        while (true) {
-            System.out.println("== LISTE MENÜ ==");
-            System.out.println("[1] Hinzufügen zur Liste");
-            System.out.println("[2] Einfügen an der aktuellen Position");
-            System.out.println("[3] Entfernen aus der Liste");
-            System.out.println("[4] Zeige Inhalt der Liste");
-            System.out.println("[5] Zurück zum Hauptmenü");
-            int option = scanner.nextInt();
-            scanner.nextLine(); // Scanner leeren
-
-            switch (option) {
-                case 1:
-                    System.out.println("Namen des Getränks angeben, das zur Liste hinzugefügt werden soll:");
-                    String getraenkName = scanner.nextLine();
-                    Getraenk getraenk = new Getraenk(getraenkName);
-                    getraenkList.append(getraenk);
-                    break;
-                case 2:
-                    System.out.println("Namen des Getränks angeben, das an der aktuellen Position eingefügt werden soll:");
-                    String insertName = scanner.nextLine();
-                    Getraenk insertGetraenk = new Getraenk(insertName);
-                    getraenkList.insert(insertGetraenk);
-                    break;
-                case 3:
-                    getraenkList.remove();
-                    break;
-                case 4:
-                    if (getraenkList.isEmpty()) {
-                        System.out.println("Die Liste ist leer.");
-                    } else {
-                        getraenkList.toFirst();
-                        while (getraenkList.Aktueller != null) {
-                            System.out.println("Getränk: " + getraenkList.Aktueller.getContent().getName());
-                            getraenkList.next();
-                        }
-                    }
-                    break;
-                case 5:
-                    return; // Zurück zum Hauptmenü
-                default:
-                    System.out.println("Ungültige Auswahl, bitte versuche es erneut.");
-                    break;
-            }
-        }
+    private void fuelleKaffeeListeAuf() {
+        getraenkeListe.append(new Getraenk("Cappuccino",3));
+        getraenkeListe.append(new Getraenk("Kaffee",2));
+        getraenkeListe.append(new Getraenk("FlatWhite",4));
+        getraenkeListe.append(new Getraenk("ColdBrew",2));
     }
+
+
 }
