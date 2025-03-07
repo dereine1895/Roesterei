@@ -5,15 +5,19 @@ public class Rechnung {
     private String datum;
 
     public Rechnung(String pDatum, int pRechnungsnr, int pBetrag){
-
+         this.datum = pDatum;
+         this.betrag = pBetrag;
+         this.rechnungsnr = pRechnungsnr;
     }
     public int getRechnungsnr(){
-
+          return rechnungsnr;
     }
     public int getBetrag(){
+        return betrag;
 
     }
     public String getDatum(){
+        return datum;
 
     }
 
